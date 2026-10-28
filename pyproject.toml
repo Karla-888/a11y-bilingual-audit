@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "a11y-bilingual-audit"
+version = "0.2.0"
+description = "Auditoría automatizada de accesibilidad WCAG 2.1 AA que compara versiones en inglés y español de un sitio"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Karla Zárate" }]
+license = { text = "MIT" }
+dependencies = [
+    "playwright>=1.48,<2",
+    "Jinja2>=3.1,<4",
+    "PyYAML>=6,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<10",
+    "pytest-playwright>=0.5,<1",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+a11y-audit = "a11y_audit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+a11y_audit = ["templates/*.html", "vendor/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::pytest.PytestRemovedIn10Warning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

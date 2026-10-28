@@ -1,0 +1,17 @@
+# Sitios a auditar. Cada sitio tiene su versión en inglés (en) y en español (es).
+# Agrega o quita sitios sin tocar el código.
+
+settings:
+  wcag_tags: [wcag2a, wcag2aa, wcag21a, wcag21aa]
+  timeout_ms: 45000   # tiempo máximo de carga por página
+  delay_s: 2          # pausa entre páginas (sé amable con los servidores públicos)
+  min_score: null     # ej. 80: la CLI termina con error si algún puntaje queda abajo
+
+sites:
+  - name: Sitio de ejemplo (fixtures locales)
+    en: tests/fixtures/site_en.html
+    es: tests/fixtures/site_es.html
+
+  # - name: City of Example, TX
+  #   en: https://www.example.gov/
+  #   es: https://www.example.gov/es/

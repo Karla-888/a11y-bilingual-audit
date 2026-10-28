@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporte de accesibilidad EN / ES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #F5F7FA; --surface: #FFFFFF; --ink: #1D2433; --muted: #4A5468; --line: #D5DAE3;
+    --en: #2E5AAC; --es: #0F7A5C; --track: #E6EAF0;
+    --critical: #B42318; --serious: #A3420A; --moderate: #6E5400; --minor: #4B5563;
+    --focus: #2E5AAC;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #141922; --surface: #1C2230; --ink: #E8ECF3; --muted: #A9B2C3; --line: #323B4D;
+      --en: #8FB2F5; --es: #5FD3AE; --track: #2A3242;
+      --critical: #FF8A80; --serious: #FFB27A; --moderate: #E9CC6A; --minor: #C2C9D6; --focus: #8FB2F5;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 1.0625rem/1.6 "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  }
+  a { color: var(--en); }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .skip { position: absolute; left: -999px; top: 0; background: var(--surface); padding: .5rem 1rem; }
+  .skip:focus { left: 1rem; top: 1rem; }
+  main { max-width: 60rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+  header p.meta { color: var(--muted); margin: 0 0 2rem; font-size: .95rem; }
+  h1 { font-size: clamp(1.75rem, 4.5vw, 2.75rem); line-height: 1.15; margin: 0 0 .75rem; max-width: 22ch; }
+  h2 { font-size: 1.35rem; margin: 0 0 1rem; }
+  .legend { display: flex; gap: 1.5rem; margin: 0 0 2.5rem; padding: 0; list-style: none; color: var(--muted); }
+  .legend li::before { content: ""; display: inline-block; width: .9rem; height: .9rem; border-radius: 2px; margin-right: .45rem; vertical-align: -1px; }
+  .legend .en::before { background: var(--en); } .legend .es::before { background: var(--es); }
+
+  .site { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.25rem; }
+  .scale { display: grid; grid-template-columns: 2.5rem 1fr 3rem; align-items: center; gap: .5rem .75rem; margin-bottom: 1rem; }
+  .scale .lang { font-weight: 700; }
+  .bar { height: .9rem; background: var(--track); border-radius: 999px; overflow: hidden; }
+  .bar span { display: block; height: 100%; border-radius: 999px; }
+  .bar.en span { background: var(--en); } .bar.es span { background: var(--es); }
+  .num { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+  .gap { margin: 0 0 1rem; }
+  .gap strong { font-size: 1.1rem; }
+  .flag { color: var(--critical); }
+  details { border-top: 1px solid var(--line); padding-top: .75rem; margin-top: .75rem; }
+  summary { cursor: pointer; font-weight: 700; }
+  .table-wrap { overflow-x: auto; margin-top: .75rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 700; }
+  td.n { font-variant-numeric: tabular-nums; text-align: right; }
+  .impact { font-weight: 700; white-space: nowrap; }
+  .impact.critical { color: var(--critical); } .impact.serious { color: var(--serious); }
+  .impact.moderate { color: var(--moderate); } .impact.minor { color: var(--minor); }
+  .error { color: var(--critical); }
+  footer { color: var(--muted); font-size: .9rem; margin-top: 3rem; }
+</style>
+</head>
+<body>
+<a class="skip" href="#sitios">Ir a los resultados</a>
+<main>
+  <header>
+    {% if summary.brecha_promedio is not none and summary.es_peor > 0 %}
+    <h1>En {{ summary.es_peor }} de {{ summary.sitios }} sitios, la versión en español es menos accesible.</h1>
+    {% else %}
+    <h1>Resultados de accesibilidad de {{ summary.sitios }} sitios en inglés y español.</h1>
+    {% endif %}
+    <p class="meta">Generado el {{ generated }}. Motor: axe-core {{ axe }}. Reglas evaluadas: {{ tags }}.
+      {% if summary.brecha_promedio is not none %}Brecha promedio EN − ES: {{ summary.brecha_promedio }} puntos.{% endif %}</p>
+    <ul class="legend" aria-label="Leyenda">
+      <li class="en">Inglés</li>
+      <li class="es">Español</li>
+    </ul>
+  </header>
+
+  <section id="sitios" aria-label="Resultados por sitio">
+  {% for c in comparisons %}
+    <article class="site">
+      <h2>{{ c.name }}</h2>
+      {% for lang, res, sc in [("EN", c.en, c.en_score), ("ES", c.es, c.es_score)] %}
+      <div class="scale">
+        <span class="lang">{{ lang }}</span>
+        {% if sc is none %}
+        <span class="error">La página no cargó: {{ res.error[:120] }}</span><span></span>
+        {% else %}
+        <div class="bar {{ lang|lower }}" role="img" aria-label="Puntaje {{ lang }}: {{ sc }} de 100"><span style="width: {{ sc }}%"></span></div>
+        <span class="num">{{ sc }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if c.gap is not none %}
+      <p class="gap">
+        {% if c.gap > 0 %}<strong class="flag">El español está {{ c.gap }} puntos abajo.</strong>
+        {% elif c.gap < 0 %}<strong>El español está {{ -c.gap }} puntos arriba.</strong>
+        {% else %}<strong>Ambas versiones tienen el mismo puntaje.</strong>{% endif %}
+        {% if not c.es.lang_ok %} La página en español declara lang="{{ c.es.declared_lang or 'vacío' }}", así que el lector de pantalla la lee con pronunciación en inglés.{% endif %}
+        {% if c.es_only_rules %} Fallas que solo aparecen en español: {{ c.es_only_rules|join(", ") }}.{% endif %}
+      </p>
+      {% endif %}
+
+      {% for lang, res in [("inglés", c.en), ("español", c.es)] %}
+      {% if res.violations %}
+      <details>
+        <summary>{{ res.violations|length }} reglas incumplidas en {{ lang }}</summary>
+        <p><a href="{{ res.url }}">{{ res.url }}</a></p>
+        <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Severidad</th><th scope="col">Problema</th><th scope="col">WCAG</th><th scope="col">Elementos</th></tr></thead>
+          <tbody>
+          {% for v in res.violations %}
+            <tr>
+              <td class="impact {{ v.impact }}">{{ v.impact|impact_label }}</td>
+              <td><a href="{{ v.help_url }}">{{ v.description }}</a></td>
+              <td>{{ v.wcag|join(", ") or "Buena práctica" }}</td>
+              <td class="n">{{ v.nodes }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </details>
+      {% endif %}
+      {% endfor %}
+    </article>
+  {% endfor %}
+  </section>
+
+  <footer>
+    <p>Puntaje: 100 menos una penalización por elemento afectado (crítico 10, grave 5, moderado 2, menor 1) y 10 puntos si el idioma declarado no coincide.
+    Las pruebas automatizadas no detectan todos los problemas de accesibilidad; complementa este reporte con revisión manual.</p>
+  </footer>
+</main>
+</body>
+</html>
